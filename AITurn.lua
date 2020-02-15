@@ -129,11 +129,17 @@ function AITurn.canMakeKTurn(vehicle, turnContext)
 end
 
 ---@param turnContext TurnContext
+---@return boolean, number True if there's enough space to make a forward turn on the field. Also return the
+---distance to reverse in order to be able to just make the turn on the field
 function AITurn.canTurnOnField(turnContext, vehicle)
 	local spaceNeededOnFieldForTurn = AIDriverUtil.getTurningRadius(vehicle) + vehicle.cp.workWidth / 2
 	local distanceToFieldEdge = turnContext:getDistanceToFieldEdge(turnContext.vehicleAtTurnStartNode)
 	courseplay.debugVehicle(AITurn.debugChannel, vehicle, 'Space needed to turn on field %.1f m', spaceNeededOnFieldForTurn)
-	return distanceToFieldEdge and (distanceToFieldEdge > spaceNeededOnFieldForTurn)
+	if distanceToFieldEdge then
+		return (distanceToFieldEdge > spaceNeededOnFieldForTurn), spaceNeededOnFieldForTurn - distanceToFieldEdge
+	else
+		return false, 0
+	end
 end
 
 function AITurn:setForwardSpeed()
@@ -522,12 +528,11 @@ function CourseTurn:generatePathfinderTurn()
 	self.pathFindingStartedAt = self.vehicle.timer
 	local done, path
 	local turnEndNode, startOffset, goalOffset = self.turnContext:getTurnEndNodeAndOffsets()
-
-	self:debug('Space needed to turn on field %.1f m', spaceNeededOnFieldForTurn)
-	if AITurn.canTurnOnField(self.turnContext, self.vehicle) and self.vehicle.cp.turnOnField then
+	local canTurnOnField, distanceToReverse = AITurn.canTurnOnField(self.turnContext, self.vehicle)
+	if not canTurnOnField and self.vehicle.cp.turnOnField then
 		self:debug('Turn on field is on, generating reverse course before turning.')
-		self.reverseBeforeStartingTurnWaypoints = self.turnContext:createReverseWaypointsBeforeStartingTurn(self.vehicle, spaceNeededOnFieldForTurn - distanceToFieldEdge)
-		startOffset = startOffset - (spaceNeededOnFieldForTurn - distanceToFieldEdge)
+		self.reverseBeforeStartingTurnWaypoints = self.turnContext:createReverseWaypointsBeforeStartingTurn(self.vehicle, distanceToReverse)
+		startOffset = startOffset - distanceToReverse
 	end
 
 	if self.vehicle.cp.settings.usePathfindingInTurns:is(false) or self.turnContext:isSimpleWideTurn(self.turningRadius * 2) then
