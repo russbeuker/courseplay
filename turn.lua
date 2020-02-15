@@ -2429,8 +2429,10 @@ function TurnContext:init(course, turnStartIx, aiDriverData, workWidth, frontMar
 	-- this is the node the vehicle's root node must be at so the front of the work area is exactly at the turn start
 	self.frontMarkerDistance = frontMarkerDistance or 0
 	if not aiDriverData.vehicleAtTurnStartNode then
-		aiDriverData.vehicleAtTurnStartNode = courseplay.createNode( 'vehicleAtTurnStart', 0, - self.frontMarkerDistance, math.pi, self.workEndNode )
+		aiDriverData.vehicleAtTurnStartNode = courseplay.createNode( 'vehicleAtTurnStart', 0, - self.frontMarkerDistance, 0, self.workEndNode )
 	end
+	setTranslation(aiDriverData.vehicleAtTurnStartNode, 0, 0, - self.frontMarkerDistance)
+
 	self.vehicleAtTurnStartNode = aiDriverData.vehicleAtTurnStartNode
 
 	self:setupTurnEnd(course, aiDriverData, turnEndSideOffset)
@@ -2440,6 +2442,7 @@ function TurnContext:init(course, turnStartIx, aiDriverData, workWidth, frontMar
 	if not aiDriverData.vehicleAtTurnEndNode then
 		aiDriverData.vehicleAtTurnEndNode = courseplay.createNode( 'vehicleAtTurnEnd', 0, - self.frontMarkerDistance, 0, self.turnEndWpNode.node )
 	end
+	setTranslation(aiDriverData.vehicleAtTurnEndNode, 0, 0, - self.frontMarkerDistance)
 	self.vehicleAtTurnEndNode = aiDriverData.vehicleAtTurnEndNode
 
 	self.dx, _, self.dz = localToLocal(self.turnEndWpNode.node, self.workEndNode, 0, 0, 0)

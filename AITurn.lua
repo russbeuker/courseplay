@@ -128,11 +128,12 @@ function AITurn.canMakeKTurn(vehicle, turnContext)
 	return true
 end
 
+---@param turnContext TurnContext
 function AITurn.canTurnOnField(turnContext, vehicle)
 	local spaceNeededOnFieldForTurn = AIDriverUtil.getTurningRadius(vehicle) + vehicle.cp.workWidth / 2
 	local distanceToFieldEdge = turnContext:getDistanceToFieldEdge(turnContext.vehicleAtTurnStartNode)
 	courseplay.debugVehicle(AITurn.debugChannel, vehicle, 'Space needed to turn on field %.1f m', spaceNeededOnFieldForTurn)
-	return distanceToFieldEdge and (distanceToFieldEdge < spaceNeededOnFieldForTurn)
+	return distanceToFieldEdge and (distanceToFieldEdge > spaceNeededOnFieldForTurn)
 end
 
 function AITurn:setForwardSpeed()
